@@ -1,3 +1,5 @@
+require "json"
+
 module Life
   # Utility methods
   module Utils
