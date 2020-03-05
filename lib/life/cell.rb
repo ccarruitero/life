@@ -1,4 +1,10 @@
 module Life
+  # Represent a Cell in Game of Life's grid
+  # Only parameter that receive for initialize new instance is a Hash of options
+  # Available options:
+  # * alive: boolean => Cell's state.
+  # * row: integer => Cell's row in the grid
+  # * column: integer => Cell's column in the grid
   class Cell
     attr_reader :alive, :row, :column
 
