@@ -5,14 +5,10 @@ RSpec.describe Life::Cell do
 
   it "has access to properties" do
     expect(subject.alive).to eq(true)
-    expect(subject.row).to eq(3)
-    expect(subject.column).to eq(5)
   end
 
   it "cant update properties directly" do
     expect(subject.respond_to?(:alive=)).to eq(false)
-    expect(subject.respond_to?(:row=)).to eq(false)
-    expect(subject.respond_to?(:column=)).to eq(false)
   end
 
   it "#die turn alive to false" do
