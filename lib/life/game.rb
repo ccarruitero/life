@@ -1,13 +1,23 @@
 require "matrix"
 require_relative "./cell"
+require_relative "./utils"
 
 module Life
+  # Game is the core for this gem.
+  # Is responsible to initialize and store the grid of cells, also provide
+  # operations related to the grid, like calculate living neighbors or
+  # tick for new generations
+  # * height => height for Game of Life's grid
+  # * height => width for Game of Life's grid
+  # * pattern => could be a number or a 2d array for desired seed positions
   class Game
+    include Utils
+
     attr_reader :grid
 
     def initialize(height, width, pattern)
-      @grid = Matrix.build(height, width) do |x, y|
-        Cell.new({ row: x, column: y})
+      @grid = Matrix.build(height, width) do |row, column|
+        Cell.new({ row: row, column: column})
       end
 
       seed(pattern)
@@ -16,33 +26,19 @@ module Life
     def seed(pattern)
       case pattern
         when Integer
-          cells_count = 1
-          @grid.each do |cell|
-            cell.live if cells_count % pattern == 0
-            cells_count += 1
-          end
+          seed_by_number(pattern)
         when Array
-          pattern.each do |row, column|
-            @grid[row, column]&.live
-          end
+          seed_by_array(pattern)
        end
     end
 
     def live_neighbor_count(cell)
       count = 0
-      positions = [-1, 0, 1]
 
-      positions.each do |row|
-        positions.each do |column|
-          next if row == 0 && column == 0
+      neighbor_positions(cell).each do |neighbor_row, neighbor_column|
+        next if off_grid(neighbor_row, neighbor_column)
 
-          neighbor_row = cell.row + row
-          neighbor_column = cell.column + column
-
-          next if off_grid(neighbor_row, neighbor_column)
-
-          count += 1 if @grid[neighbor_row, neighbor_column].alive
-        end
+        count += 1 if @grid[neighbor_row, neighbor_column].alive
       end
 
       count
@@ -52,14 +48,7 @@ module Life
       next_grid = Marshal.load(Marshal.dump(@grid))
 
       @grid.each do |cell|
-        living_neighbors = live_neighbor_count(cell)
-        next_cell = next_grid[cell.row, cell.column]
-
-        if cell.alive
-          next_cell.die unless (2..3).include?(living_neighbors)
-        else
-          next_cell.live if living_neighbors === 3
-        end
+        apply_rules(cell, next_grid, live_neighbor_count(cell))
       end
 
       @grid = next_grid
@@ -72,6 +61,18 @@ module Life
     end
 
     private
+
+    def seed_by_number(pattern)
+      @grid.to_a.flatten.each_with_index do |cell, index|
+        cell.live if (index + 1) % pattern == 0
+      end
+    end
+
+    def seed_by_array(pattern)
+      pattern.each do |row, column|
+        @grid[row, column]&.live
+      end
+    end
 
     def off_grid(row, column)
       row < 0 || column < 0 || row > last("row") || column > last("column")
