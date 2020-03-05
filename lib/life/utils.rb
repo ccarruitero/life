@@ -20,5 +20,23 @@ module Life
         .reject { |position| position == [0,0] }
         .map { |row, column| [cell.row + row, cell.column + column] }
     end
+
+    def parse_pattern(pattern_type, pattern)
+      case pattern_type
+        when "numeric"
+          pattern.to_i
+        when "array"
+          JSON.parse(pattern)
+      end
+    end
+
+    def run_game(game)
+      loop do
+        system "clear"
+        game.print
+        game.tick
+        sleep(0.3)
+      end
+    end
   end
 end
